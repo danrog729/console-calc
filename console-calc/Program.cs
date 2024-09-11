@@ -187,7 +187,12 @@ namespace console_calc
                             break;
                         }
                     case 18:
-                    // hex -> bin
+                        {
+                            // hex -> bin
+                            string binary = UserInputHex("Enter hexadecimal value: 0x");
+                            Console.WriteLine("Binary: 0b" + Convert.ToString(Convert.ToInt32(binary, 16),2));
+                            break;
+                        }
                     case 19:
                         {
                             // den -> hex
@@ -196,12 +201,19 @@ namespace console_calc
                             break;
                         }
                     case 20:
-                    // hex -> den
+                        {
+                            // hex -> dec
+                            string binary = UserInputHex("Enter hexadecimal value: 0x");
+                            Console.WriteLine("Denary: " + Convert.ToInt32(binary, 16));
+                            break;
+                        }
                     case 21:
-                        // quit
-                        shouldQuit = true;
-                        Console.WriteLine("Goodbye!");
-                        break;
+                        {
+                            // quit
+                            shouldQuit = true;
+                            Console.WriteLine("Goodbye!");
+                            break;
+                        }
                 }
                 Console.WriteLine("Press enter to continue");
                 Console.ReadLine();
@@ -263,9 +275,18 @@ namespace console_calc
                 Console.Write(prompt);
 
                 output = Console.ReadLine();
+                foreach (char character in output)
+                {
+                    if (!('0' <= character && character <= '9' || 'A' <= character && character <= 'F' || 'a' <= character && character <= 'f'))
+                    {
+                        validHex = false;
+                    }
+                }
 
             }
             while (!validHex);
+
+            return output;
         }
     }
 }
