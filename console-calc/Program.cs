@@ -173,13 +173,28 @@ namespace console_calc
                             break;
                         }
                     case 16:
-                    // bin -> den
+                        {
+                            // bin -> den
+                            string binary = UserInputBin("Enter binary value: 0b");
+                            Console.WriteLine("Denary: " + Convert.ToInt32(binary, 2));
+                            break;
+                        }
                     case 17:
-                    // bin -> hex
+                        {
+                            // bin -> hex
+                            string binary = UserInputBin("Enter binary value: 0b");
+                            Console.WriteLine("Hexadecimal: 0x" + Convert.ToInt32(binary, 2).ToString("X"));
+                            break;
+                        }
                     case 18:
                     // hex -> bin
                     case 19:
-                    // den -> hex
+                        {
+                            // den -> hex
+                            int denary = UserInputInt("Enter denary value: ");
+                            Console.WriteLine("Hexadecimal: 0x" + denary.ToString("X"));
+                            break;
+                        }
                     case 20:
                     // hex -> den
                     case 21:
@@ -213,6 +228,44 @@ namespace console_calc
             }
             while (!Int32.TryParse(Console.ReadLine(), out output));
             return output;
+        }
+
+        static string UserInputBin(string prompt)
+        {
+            string output;
+            bool validBinary = false;
+            do
+            {
+                validBinary = true;
+                Console.Write(prompt);
+
+                output = Console.ReadLine();
+                foreach (char character in output)
+                {
+                    if (character != '1' && character != '0')
+                    {
+                        validBinary = false;
+                    }
+                }
+            }
+            while (!validBinary);
+
+            return output;
+        }
+
+        static string UserInputHex(string prompt)
+        {
+            string output;
+            bool validHex = false;
+            do
+            {
+                validHex = true;
+                Console.Write(prompt);
+
+                output = Console.ReadLine();
+
+            }
+            while (!validHex);
         }
     }
 }
