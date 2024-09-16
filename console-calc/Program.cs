@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Schema;
 
 namespace console_calc
 {
@@ -38,7 +40,9 @@ namespace console_calc
                     "19. Denary to Hex\n" +
                     "20. Hex to Denary\n" +
                     "\n" +
-                    "21. Quit");
+                    "21. Freeform Expression\n" +
+                    "\n" +
+                    "22. Quit");
 
 
                 int choice;
@@ -48,7 +52,7 @@ namespace console_calc
                     Console.Write("Enter your choice: ");
                     if (Int32.TryParse(Console.ReadLine(), out choice))
                     {
-                        if (1 <= choice && choice <= 21)
+                        if (1 <= choice && choice <= 22)
                         {
                             validChoice = true;
                         }
@@ -209,6 +213,21 @@ namespace console_calc
                         }
                     case 21:
                         {
+                            // freeform expression
+
+                            FreeformCalculator calc = new FreeformCalculator();
+
+                            while (!calc.isValidExpression)
+                            {
+                                Console.Write("Enter expression: ");
+                                string expression = Console.ReadLine();
+                                calc.Input = expression;
+                            }
+
+                            break;
+                        }
+                    case 22:
+                        {
                             // quit
                             shouldQuit = true;
                             Console.WriteLine("Goodbye!");
@@ -245,7 +264,7 @@ namespace console_calc
         static string UserInputBin(string prompt)
         {
             string output;
-            bool validBinary = false;
+            bool validBinary;
             do
             {
                 validBinary = true;
@@ -268,7 +287,7 @@ namespace console_calc
         static string UserInputHex(string prompt)
         {
             string output;
-            bool validHex = false;
+            bool validHex;
             do
             {
                 validHex = true;
@@ -288,5 +307,206 @@ namespace console_calc
 
             return output;
         }
+    }
+
+    public class FreeformCalculator
+    {
+        private string input;
+        public string Input
+        {
+            get { return input; }
+            set
+            {
+                input = value;
+                Tokenise();
+                ShuntingYard();
+            }
+        }
+        private Token[] tokenisedInput;
+        private Stack<Token> expression;
+        private HashSet<char> operators;
+        public bool isValidExpression;
+
+        public FreeformCalculator()
+        {
+            input = "";
+            expression = new Stack<Token>();
+            tokenisedInput = new Token[0];
+            isValidExpression = false;
+            operators = new HashSet<char> {'+', '-', '*', '/', '^', '(', ')'};
+        }
+
+        private void Tokenise()
+        {
+            List<Token> tokenList = new List<Token>();
+
+            int tokenStart = 0;
+            int tokenEnd = 0;
+            bool hasDecimal = false;
+
+            for (int index = 0; index < input.Length; index++)
+            {
+                if (operators.Contains(input[index]))
+                {
+                    // if the character is an operator
+                    tokenEnd = index;
+
+                    // tokenise
+                    switch (input[index])
+                    {
+                        case '+':
+                            tokenList.Add(new AdditionToken()); break;
+                        case '-':
+                            tokenList.Add(new SubtractionToken()); break;
+                        case '*':
+                            tokenList.Add(new MultiplicationToken()); break;
+                        case '/':
+                            tokenList.Add(new DivisionToken()); break;
+                        case '^':
+                            tokenList.Add(new ExponentiationToken()); break;
+                        case '(':
+                            tokenList.Add(new OpenBracketToken()); break;
+                        case ')':
+                            tokenList.Add(new CloseBracketToken()); break;
+                        default:
+                            isValidExpression = false;
+                            Console.WriteLine("ERROR | No token for operator: \"" + input[index] + "\"");
+                            return;
+                    }
+
+                    // start the next token
+                    tokenStart = index + 1;
+                }
+                else if (input[index] == '.')
+                {
+                    // if the character is a decimal point
+                    if (hasDecimal)
+                    {
+                        // ERROR
+                        isValidExpression = false;
+                        return;
+                    }
+                    else
+                    {
+                        hasDecimal = true;
+                    }
+                }
+                if (Char.IsDigit(input[index]) || input[index] == '.')
+                {
+                    // if the character is a decimal point or a digit
+                    if (index == input.Length - 1 || !(Char.IsDigit(input[index + 1]) || (input[index + 1] == '.')))
+                    {
+                        // end of the number
+                        // numbers cant end with a decimal point
+                        if (input[index] == '.')
+                        {
+                            isValidExpression = false;
+                            return;
+                        }
+                        tokenEnd = index;
+
+                        // tokenise
+                        string inputSubstring = input.Substring(tokenStart, tokenEnd - tokenStart + 1);
+                        if (!Single.TryParse(inputSubstring, out float inputFloat))
+                        {
+                            Console.WriteLine("ERROR | Could not parse \"" + inputSubstring + "\" as a float.");
+                            isValidExpression = false;
+                            return;
+                        }
+                        tokenList.Add(new FloatToken(inputFloat));
+
+                        // start the next token
+                        tokenStart = index + 1; 
+                        hasDecimal = false;
+                    }
+                }
+            }
+
+            // tokenised now
+            // convert to an array
+            tokenisedInput = new Token[tokenList.Count];
+            for (int index = 0; index < tokenList.Count; index++)
+            {
+                tokenisedInput[index] = tokenList[index];
+            }
+        }
+
+        private void ShuntingYard()
+        {
+
+        }
+    }
+
+    public class Token
+    {
+
+    }
+
+    public class FloatToken : Token
+    {
+        public float value;
+
+        public FloatToken(float newValue)
+        {
+            value = newValue;
+        }
+    }
+
+    public class OperatorToken : Token
+    {
+        public float Operate(float value1, float value2)
+        {
+            return 0f;
+        }
+    }
+
+    public class AdditionToken : OperatorToken
+    {
+        new public float Operate(float value1, float value2)
+        {
+            return value1 + value2;
+        }
+    }
+
+    public class SubtractionToken : OperatorToken
+    {
+        new public float Operate(float value1, float value2)
+        {
+            return value1 - value2;
+        }
+    }
+
+    public class MultiplicationToken : OperatorToken
+    {
+        new public float Operate(float value1, float value2)
+        {
+            return value1 * value2;
+        }
+    }
+
+    public class DivisionToken : OperatorToken
+    {
+        new public float Operate(float value1, float value2)
+        {
+            return value1 / value2;
+        }
+    }
+
+    public class ExponentiationToken : OperatorToken
+    {
+        new public float Operate(float value1, float value2)
+        {
+            return (float)Math.Pow(value1,value2);
+        }
+    }
+
+    public class OpenBracketToken : OperatorToken
+    {
+
+    }
+
+    public class CloseBracketToken : OperatorToken
+    {
+
     }
 }
