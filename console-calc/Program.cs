@@ -11,7 +11,7 @@ namespace console_calc
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             bool shouldQuit = false;
             while (!shouldQuit)
@@ -327,7 +327,7 @@ namespace console_calc
         }
         private List<Token> tokenList;
         private Queue<Token> expression;
-        private HashSet<char> operators;
+        private readonly HashSet<char> operators;
         public bool isValidExpression;
 
         public FreeformCalculator()
@@ -347,7 +347,7 @@ namespace console_calc
             _input = _input.Replace(",", "");
 
             int tokenStart = 0;
-            int tokenEnd = 0;
+            int tokenEnd;
             bool hasDecimal = false;
 
             for (int index = 0; index < _input.Length; index++)
@@ -355,7 +355,6 @@ namespace console_calc
                 if (operators.Contains(_input[index]))
                 {
                     // if the character is an operator
-                    tokenEnd = index;
 
                     // tokenise
                     switch (_input[index])
