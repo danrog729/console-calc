@@ -438,11 +438,9 @@ namespace console_calc
                 {
                     if (index == 0 || tokenList[index-1] is OperatorToken & !(tokenList[index-1] is CloseBracketToken))
                     {
-                        tokenList.Remove(tokenList[index]);
-                        if (tokenList[index] is FloatToken)
-                        {
-                            ((FloatToken)tokenList[index]).value *= -1;
-                        }
+                        tokenList.RemoveAt(index);
+                        tokenList.Insert(index, new MultiplicationToken());
+                        tokenList.Insert(index, new FloatToken(-1));
                     }
                 }
                 else if (tokenList[index] is OpenBracketToken)
@@ -530,7 +528,10 @@ namespace console_calc
                 expression.Enqueue(operatorStack.Pop());
             }
 
-            isValidExpression = true;
+            if (expression.Count > 0)
+            {
+                isValidExpression = true;
+            }
         }
 
         public float Evaluate()
